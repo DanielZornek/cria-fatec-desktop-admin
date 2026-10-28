@@ -1,0 +1,21 @@
+# Ambiente Virtual
+ambiente/
+venv/
+ENV/
+env/
+
+# Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# PyInstaller (pastas de build locais)
+build/
+dist/
+*.spec
+
+# Sistema / IDEs
+.vscode/
+.idea/
+.DS_Store
