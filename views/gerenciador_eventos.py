@@ -1,11 +1,9 @@
-# views/gerenciador_eventos.py
 import tkinter as tk
-from tkinter import messagebox
 from supabase import create_client, Client
 import styles
 from datetime import datetime, timedelta
+import components.custom_modal as modal
 
-# Importa o matplotlib para gráficos integrados no Tkinter
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -25,42 +23,28 @@ class GerenciadorEventosView(tk.Frame):
         self.carregar_eventos()
 
     def criar_interface(self):
-        # Cabeçalho
         header_frame = tk.Frame(self, bg=styles.COLOR_BG_CARD, height=60)
         header_frame.pack(fill="x", side="top", pady=(0, 10))
 
         btn_voltar = tk.Button(
-            header_frame, 
-            text="← Voltar", 
-            bg=styles.COLOR_BG_DARK, 
-            fg=styles.COLOR_TEXT_LIGHT, 
-            bd=0, 
-            font=("Arial", 10, "bold"),
-            padx=15,
-            pady=10,
-            cursor="hand2",
+            header_frame, text="← Voltar", bg=styles.COLOR_BG_DARK, fg=styles.COLOR_TEXT_LIGHT, 
+            bd=0, font=("Arial", 10, "bold"), padx=15, pady=10, cursor="hand2",
             command=lambda: self.controller.show_frame("DashboardView")
         )
         btn_voltar.pack(side="left", padx=20)
 
         titulo = tk.Label(
-            header_frame, 
-            text="Gerenciamento de Eventos", 
-            font=styles.FONT_TITLE, 
-            bg=styles.COLOR_BG_CARD, 
-            fg=styles.COLOR_PRIMARY
+            header_frame, text="Gerenciamento de Eventos", font=styles.FONT_TITLE, 
+            bg=styles.COLOR_BG_CARD, fg=styles.COLOR_PRIMARY
         )
         titulo.pack(side="left", padx=10)
 
-        # Conteúdo Principal
         main_content = tk.Frame(self, bg=styles.COLOR_BG_DARK)
         main_content.pack(fill="both", expand=True, padx=25, pady=5)
 
-        # --- ÁREA DO GRÁFICO (EM CIMA DA PESQUISA) ---
         self.chart_frame = tk.Frame(main_content, bg=styles.COLOR_BG_CARD, bd=1, relief="solid")
         self.chart_frame.pack(fill="x", pady=(0, 15))
 
-        # Barra de Pesquisa
         search_frame = tk.Frame(main_content, bg=styles.COLOR_BG_DARK)
         search_frame.pack(fill="x", pady=(0, 10))
 
@@ -71,7 +55,6 @@ class GerenciadorEventosView(tk.Frame):
         self.entry_pesquisa.pack(side="left", fill="x", expand=True, ipady=4)
         self.entry_pesquisa.bind("<KeyRelease>", self.filtrar_eventos)
 
-        # Container / Scroll para a Lista de Eventos
         list_container = tk.Frame(main_content, bg=styles.COLOR_BG_DARK)
         list_container.pack(fill="both", expand=True)
 
@@ -97,14 +80,12 @@ class GerenciadorEventosView(tk.Frame):
             self.atualizar_grafico(self.todos_eventos)
             self.desenhar_lista(self.todos_eventos)
         except Exception as e:
-            messagebox.showerror("Erro", f"Erro ao carregar eventos: {str(e)}")
+            modal.showerror(self.winfo_toplevel(), "Erro", f"Erro ao carregar eventos: {str(e)}")
 
     def atualizar_grafico(self, eventos):
-        # Limpa o gráfico anterior para redesenhar
         for widget in self.chart_frame.winfo_children():
             widget.destroy()
 
-        # Agrupa eventos criados nos últimos 7 dias
         conts = {}
         for i in range(6, -1, -1):
             dia = (datetime.now() - timedelta(days=i)).strftime('%d/%m')
@@ -124,7 +105,6 @@ class GerenciadorEventosView(tk.Frame):
         dias = list(conts.keys())
         quantidades = list(conts.values())
 
-        # Configura o gráfico com visual escuro combinando com o painel
         fig, ax = plt.subplots(figsize=(6, 1.7), dpi=100)
         fig.patch.set_facecolor('#22262B')
         ax.set_facecolor('#22262B')
@@ -188,27 +168,20 @@ class GerenciadorEventosView(tk.Frame):
 
             evento_id = evento.get("id")
             btn_deletar = tk.Button(
-                card, 
-                text="🗑️ Apagar", 
-                bg=styles.COLOR_PRIMARY, 
-                fg=styles.COLOR_TEXT_LIGHT, 
-                bd=0, 
-                font=("Arial", 9, "bold"),
-                padx=12,
-                pady=6,
-                cursor="hand2",
+                card, text="🗑️ Apagar", bg=styles.COLOR_PRIMARY, fg=styles.COLOR_TEXT_LIGHT, 
+                bd=0, font=("Arial", 9, "bold"), padx=12, pady=6, cursor="hand2",
                 command=lambda eid=evento_id: self.deletar_evento(eid)
             )
             btn_deletar.pack(side="right", padx=15, pady=10)
 
     def deletar_evento(self, evento_id):
-        confirm = messagebox.askyesno("Confirmar Exclusão", "Tem certeza que deseja apagar este evento permanentemente?")
+        confirm = modal.askyesno(self.winfo_toplevel(), "Confirmar Exclusão", "Tem certeza que deseja apagar este evento permanentemente?")
         if not confirm:
             return
 
         try:
             supabase.table("events").delete().eq("id", evento_id).execute()
-            messagebox.showinfo("Sucesso", "Evento apagado com sucesso!")
+            modal.showinfo(self.winfo_toplevel(), "Sucesso", "Evento apagado com sucesso!")
             self.carregar_eventos()
         except Exception as e:
-            messagebox.showerror("Erro", f"Erro ao excluir evento: {str(e)}")
+            modal.showerror(self.winfo_toplevel(), "Erro", f"Erro ao excluir evento: {str(e)}")

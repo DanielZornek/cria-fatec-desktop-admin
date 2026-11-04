@@ -1,10 +1,8 @@
-# views/cad_evento.py
 import tkinter as tk
-from tkinter import messagebox
 from supabase import create_client, Client
 import styles
+import components.custom_modal as modal  # Importa o modal customizado
 
-# Insira aqui a sua URL e a chave pública do Supabase
 SUPABASE_URL = "https://fpomnbsbgsmbrnatfmrj.supabase.co"
 SUPABASE_KEY = "sb_publishable_kT15zEwJ4CAId1qExsF2HA_V31vPaMf"
 
@@ -85,11 +83,10 @@ class CadEventoView(tk.Frame):
         categoria = self.entry_categoria.get().strip()
 
         if not titulo or not descricao:
-            messagebox.showerror("Erro", "Preencha pelo menos o título e a descrição!")
+            modal.showerror(self, "Atenção", "Preencha pelo menos o título e a descrição!")
             return
 
         try:
-            # Dados enviados diretamente sem depender de IDs de usuário
             dados = {
                 "titulo": titulo,
                 "descricao": descricao,
@@ -98,12 +95,10 @@ class CadEventoView(tk.Frame):
                 "categoria": categoria if categoria else "Geral"
             }
             
-            # Insere na tabela 'events' do Supabase
             supabase.table("events").insert(dados).execute()
             
-            messagebox.showinfo("Sucesso", "Evento cadastrado com sucesso no Supabase!")
+            modal.showinfo(self, "Sucesso", "Evento cadastrado com sucesso no Supabase!")
             
-            # Limpa os campos após o sucesso
             self.entry_titulo.delete(0, tk.END)
             self.text_desc.delete("1.0", tk.END)
             self.entry_data.delete(0, tk.END)
@@ -111,4 +106,4 @@ class CadEventoView(tk.Frame):
             self.entry_categoria.delete(0, tk.END)
 
         except Exception as e:
-            messagebox.showerror("Erro ao Salvar", f"Ocorreu um erro no banco: {str(e)}")
+            modal.showerror(self, "Erro ao Salvar", f"Ocorreu um erro no banco: {str(e)}")

@@ -1,7 +1,7 @@
 import tkinter as tk
-from tkinter import messagebox, simpledialog
 from supabase import create_client, Client
 import styles
+import components.custom_modal as modal
 
 # Configuração do Supabase
 SUPABASE_URL = "https://fpomnbsbgsmbrnatfmrj.supabase.co"
@@ -125,13 +125,11 @@ class GerenciadorPostsView(tk.Frame):
         if modo == "posts":
             self.btn_tab_posts.config(bg=styles.COLOR_PRIMARY)
             self.btn_tab_contest.config(bg="#333")
-            # Mostra o painel de filtros na linha 1
             self.panel_filtros.grid(row=1, column=0, sticky="ew", padx=25, pady=(0, 10))
             self.filtrar_posts()
         else:
             self.btn_tab_contest.config(bg=styles.COLOR_PRIMARY)
             self.btn_tab_posts.config(bg="#333")
-            # Esconde o painel de filtros
             self.panel_filtros.grid_remove()
             self.desenhar_lista_contestacoes()
 
@@ -153,7 +151,7 @@ class GerenciadorPostsView(tk.Frame):
 
         except Exception as e:
             print(f"Erro ao carregar dados: {e}")
-            messagebox.showerror("Erro", f"Erro ao carregar dados do Supabase: {str(e)}")
+            modal.showerror(self.winfo_toplevel(), "Erro", f"Erro ao carregar dados do Supabase: {str(e)}")
 
     def aplicar_filtro_status(self, status):
         self.filtro_atual = status
@@ -294,7 +292,7 @@ class GerenciadorPostsView(tk.Frame):
             btn_rejeitar.pack(side="right", padx=2, pady=10)
 
     def bloquear_post_modal(self, post_id):
-        motivo = simpledialog.askstring("Motivo do Bloqueio", "Digite a justificativa para bloquear esta publicação:")
+        motivo = modal.askstring(self.winfo_toplevel(), "Motivo do Bloqueio", "Digite a justificativa para bloquear esta publicação:")
         if not motivo:
             return
 
@@ -304,10 +302,10 @@ class GerenciadorPostsView(tk.Frame):
                 "motivo_bloqueio": motivo
             }).eq("id", post_id).execute()
 
-            messagebox.showinfo("Sucesso", "Publicação bloqueada com sucesso!")
+            modal.showinfo(self.winfo_toplevel(), "Sucesso", "Publicação bloqueada com sucesso!")
             self.carregar_dados()
         except Exception as e:
-            messagebox.showerror("Erro", f"Erro ao bloquear post: {str(e)}")
+            modal.showerror(self.winfo_toplevel(), "Erro", f"Erro ao bloquear post: {str(e)}")
 
     def reativar_post(self, post_id):
         try:
@@ -316,10 +314,10 @@ class GerenciadorPostsView(tk.Frame):
                 "motivo_bloqueio": None
             }).eq("id", post_id).execute()
 
-            messagebox.showinfo("Sucesso", "Publicação reativada e devolvida à vitrine!")
+            modal.showinfo(self.winfo_toplevel(), "Sucesso", "Publicação reativada e devolvida à vitrine!")
             self.carregar_dados()
         except Exception as e:
-            messagebox.showerror("Erro", f"Erro au reativar post: {str(e)}")
+            modal.showerror(self.winfo_toplevel(), "Erro", f"Erro ao reativar post: {str(e)}")
 
     def resolver_contestacao(self, contestacao_id, post_id, status_resolucao):
         try:
@@ -332,10 +330,10 @@ class GerenciadorPostsView(tk.Frame):
                     "status": "ativo",
                     "motivo_bloqueio": None
                 }).eq("id", post_id).execute()
-                messagebox.showinfo("Sucesso", "Defesa aceita! O post foi reativado.")
+                modal.showinfo(self.winfo_toplevel(), "Sucesso", "Defesa aceita! O post foi reativado.")
             else:
-                messagebox.showinfo("Info", "Contestação rejeitada.")
+                modal.showinfo(self.winfo_toplevel(), "Info", "Contestação rejeitada.")
 
             self.carregar_dados()
         except Exception as e:
-            messagebox.showerror("Erro", f"Erro ao processar contestação: {str(e)}")
+            modal.showerror(self.winfo_toplevel(), "Erro", f"Erro ao processar contestação: {str(e)}")
