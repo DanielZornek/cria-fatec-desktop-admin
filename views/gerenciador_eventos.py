@@ -3,6 +3,8 @@ from supabase import create_client, Client
 import styles
 from datetime import datetime, timedelta
 import components.custom_modal as modal
+from views.cad_evento import CadEventoView
+from views.editar_evento import EditarEventoView
 
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
@@ -167,12 +169,32 @@ class GerenciadorEventosView(tk.Frame):
                 lbl_data.pack(fill="x")
 
             evento_id = evento.get("id")
+
+            # Botão Apagar (Vermelho)
             btn_deletar = tk.Button(
-                card, text="🗑️ Apagar", bg=styles.COLOR_PRIMARY, fg=styles.COLOR_TEXT_LIGHT, 
-                bd=0, font=("Arial", 9, "bold"), padx=12, pady=6, cursor="hand2",
+                card, text="🗑️ Apagar", bg="#D9534F", fg="white", 
+                bd=0, font=("Arial", 9, "bold"), padx=10, pady=6, cursor="hand2",
                 command=lambda eid=evento_id: self.deletar_evento(eid)
             )
-            btn_deletar.pack(side="right", padx=15, pady=10)
+            btn_deletar.pack(side="right", padx=10, pady=10)
+
+            # Botão Editar (Amarelo / Âmbar) - Usa a tela dedicada de edição
+            btn_editar = tk.Button(
+                card, text="✏️ Editar", bg="#F0AD4E", fg="white", 
+                bd=0, font=("Arial", 9, "bold"), padx=10, pady=6, cursor="hand2",
+                command=lambda ev=evento: self.abrir_edicao(ev)
+            )
+            btn_editar.pack(side="right", padx=2, pady=10)
+
+    def abrir_edicao(self, evento):
+        # Instancia uma nova tela de edição exclusiva para este evento
+        self.controller.frames["EditarEventoView"] = EditarEventoView(
+            parent=self.controller.container, 
+            controller=self.controller, 
+            evento=evento
+        )
+        self.controller.frames["EditarEventoView"].grid(row=0, column=0, sticky="nsew")
+        self.controller.show_frame("EditarEventoView")
 
     def deletar_evento(self, evento_id):
         confirm = modal.askyesno(self.winfo_toplevel(), "Confirmar Exclusão", "Tem certeza que deseja apagar este evento permanentemente?")
